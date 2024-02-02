@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.Entity.Task;
 import com.app.Repo.TaskRepository;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -54,10 +56,26 @@ public class TaskController {
             existingTask.setTitle(updatedTask.getTitle());
             existingTask.setDescription(updatedTask.getDescription());
             existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setCompleted(updatedTask.isCompleted());
+            existingTask.setStatus(updatedTask.getStatus());
             return taskRepository.save(existingTask);
         }
         return null;
+    }
+    
+    @PutMapping("/{taskId}/complete")
+    public ResponseEntity<String> markTaskAsCompleted(@PathVariable Long taskId) {
+        
+        Task task = taskRepository.findById(taskId)
+                .orElse(null);
+
+        if (task != null) {
+            
+            task.setStatus("Completed");
+            taskRepository.save(task);
+            return ResponseEntity.ok("Task marked as completed successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
